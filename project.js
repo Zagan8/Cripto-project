@@ -1,6 +1,7 @@
 const state = {
     allTheCoins:[],
     columCounter:1,
+    switchCounter:1,
 }
 
 function main(){
@@ -34,7 +35,11 @@ function rendCoin(coinName,symbol){
     <h2>${symbol}</h2>
     <p>${coinName}</p>
     <button id="moreInfo" >More info</button>
-    <input type="checkbox" checked data-toggle="toggle">
+    <!-- Default checked -->
+<div class="custom-control custom-switch">
+  <input type="checkbox" class="custom-control-input" id="customSwitch${state.switchCounter}" >
+  <label class="custom-control-label" for="customSwitch${state.switchCounter}"></label>
+</div>
     </div>
     `);
     }else{
@@ -43,9 +48,14 @@ function rendCoin(coinName,symbol){
         <h2>${symbol}</h2>
         <p>${coinName}</p>
         <button id="moreInfo" >More info</button>
-        <input type="checkbox" checked data-toggle="toggle">
+        <!-- Default checked -->
+<div class="custom-control custom-switch">
+  <input type="checkbox" class="custom-control-input" id="customSwitch${state.switchCounter}">
+  <label class="custom-control-label" for="customSwitch${state.switchCounter}"></label>
+</div>
         </div>
         `); 
     }
     state.columCounter++
+    state.switchCounter++
 }
