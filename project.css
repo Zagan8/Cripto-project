@@ -1,0 +1,9 @@
+.coin{
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+}
+.col-sm{
+    padding: 0px;
+    padding-top: 10px;
+}
