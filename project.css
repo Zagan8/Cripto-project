@@ -1,9 +1,9 @@
-.coin{
+.col-sm-4{
     border-style: solid;
     border-width: 1px;
     border-color: black;
 }
-.col-sm{
+.col-sm-4{
     padding: 0px;
     padding-top: 10px;
 }
@@ -13,5 +13,13 @@
     bottom: 100px;
    
     
+}
+#search{
+    position: relative;
+    left: 1000px;
+}
+#searchInput{
+    position: relative;
+    left: 1000px; 
 }
 

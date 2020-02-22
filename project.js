@@ -1,17 +1,18 @@
 const state = {
   allTheCoins: [],
   specificCoin: [],
-  columCounter: 1,
-  switchCounter: 1
+  indexCounter: 0,
+  activeCoins: []
 };
 
 function main() {
   getAllCoins();
+  $(`#search`).on(`click`, search);
   state.allTheCoins.forEach(coin => {
     rendCoin(coin.name, coin.symbol, coin.id);
-    
   });
 }
+
 main();
 
 //call all the coins
@@ -30,17 +31,16 @@ function getAllCoins() {
 
 // rend all the coins
 function rendCoin(coinName, symbol, id) {
-  if (state.columCounter < 4) {
-    $(`#col-${state.columCounter}`).append(` <div class="coin" >
+  $(`#container`).append(` <div class="col-sm-4" >
     <h2>${symbol}</h2>
     <p>${coinName}</p>
-    <button id="col-btn-${id}" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample-${id}" aria-expanded="false" aria-controls="collapseExample">
+    <button id2="${state.indexCounter}" id="col-btn-${id}" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample-${id}" aria-expanded="false" aria-controls="collapseExample">
     More info
   </button>
 </p>
 <div class="custom-control custom-switch">
-  <input type="checkbox" class="custom-control-input" id="customSwitch${state.switchCounter}" >
-  <label class="custom-control-label" for="customSwitch${state.switchCounter}"></label>
+  <input  type="checkbox" class="custom-control-input" id="customSwitch-${id}" >
+  <label class="custom-control-label" for="customSwitch-${id}"></label>
 </div>
 <div class="collapse" id="collapseExample-${id}">
   <div id="col-div-${id}" class="card card-body">
@@ -48,45 +48,63 @@ function rendCoin(coinName, symbol, id) {
 </div>
     </div>
     `);
-  } else {
-    state.columCounter = 1;
-    $(`#col-${state.columCounter}`).append(`<div class="coin" >
-        <h2>${symbol}</h2>
-        <p>${coinName}</p>
-        <button id="col-btn-${id}" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample-${id}" aria-expanded="false" aria-controls="collapseExample">
-        More info
-      </button>
-    </p>
-    <div class="custom-control custom-switch">
-  <input type="checkbox" class="custom-control-input" id="customSwitch${state.switchCounter}">
-  <label class="custom-control-label" for="customSwitch${state.switchCounter}"></label>
-</div>
-    <div class="collapse" id="collapseExample-${id}">
-      <div id="col-div-${id} class="card card-body">    
-      </div>
-    </div>
 
-        </div>
-        `);
-        
-  }
-  state.columCounter++;
-  state.switchCounter++;
- // $(`#col-btn-${id}`).on(`click`,getSpecificCoin(id));
+  state.indexCounter++;
+  $(`#col-btn-${id}`).on(`click`, () => {
+    getSpecificCoin(id);
+  });
+  $(`#customSwitch-${id}`).on(`click`, () => {
+    activation(id);
+  });
 }
 
 function getSpecificCoin(id) {
+  $(`#col-div-${id}`).html(`<div class="spinner-border" role="status">
+  <span class="sr-only">Loading...</span>
+</div>`);
   $.ajax({
     type: "GET",
     url: `https://api.coingecko.com/api/v3/coins/${id}`,
     success: function(response) {
       state.specificCoin.push(response);
-      $(`#col-div-${id}`).append(`
+      $(`#col-div-${id}`).html(`
         <img src="${response.image.small}">
-<p>Value in shekels is:&#36;${response.market_data.current_price.ils}</p>
-<p>Value in usd is: &#8362; ${response.market_data.current_price.usd} :</p>
-<p>Value in euro is: &euro; ${response.market_data.current_price.eur} :</p>
+<p>Value in shekels is:&#8362;${response.market_data.current_price.ils}</p>
+<p>Value in usd is: &#36;${response.market_data.current_price.usd} </p>
+<p>Value in euro is: &euro; ${response.market_data.current_price.eur} </p>
         `);
     }
   });
+}
+function search() {
+  $(`#container`).html(``);
+  let inputVal = $(`#searchInput`).val();
+  $.ajax({
+    type: "GET",
+    url: `https://api.coingecko.com/api/v3/coins/${inputVal}`,
+    error: function() {
+      $(`#container`).html(
+        `<p style="color:red;" >There not such a coin please try again</p>`
+      );
+    },
+    success: function(response) {
+      rendCoin(response.name, response.symbol, response.id);
+    }
+  });
+}
+function activation(id) {
+  const $witch = $(`#customSwitch-${id}`);
+  if ($witch[0].checked && state.activeCoins.length <= 5) {
+    const chosenOne = state.allTheCoins.find(coin => {
+      return coin.id === id;
+    });
+    state.activeCoins.push(chosenOne);
+  } else if (!$witch[0].checked) {
+    const switchIndex = state.activeCoins.findIndex(activeCoin => {
+      return activeCoin.id + "" === $witch[0].id.slice(13, 100) + "";
+    });
+    state.activeCoins.splice(switchIndex, 1);
+  } else {
+    $(`#myModal`).modal(`show`);
+  }
 }
