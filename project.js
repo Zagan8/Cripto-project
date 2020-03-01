@@ -2,7 +2,8 @@ const state = {
   allTheCoins: [],
   specificCoin: [],
   indexCounter: 0,
-  activeCoins: []
+  activeCoins: [],
+  tempCoins: []
 };
 
 function main() {
@@ -11,6 +12,7 @@ function main() {
   state.allTheCoins.forEach(coin => {
     rendCoin(coin.name, coin.symbol, coin.id);
   });
+  saveModal();
 }
 
 main();
@@ -34,7 +36,7 @@ function rendCoin(coinName, symbol, id) {
   $(`#container`).append(` <div class="col-sm-4" >
     <h2>${symbol}</h2>
     <p>${coinName}</p>
-    <button id2="${state.indexCounter}" id="col-btn-${id}" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample-${id}" aria-expanded="false" aria-controls="collapseExample">
+    <button  id="col-btn-${id}" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample-${id}" aria-expanded="false" aria-controls="collapseExample">
     More info
   </button>
 </p>
@@ -98,13 +100,92 @@ function activation(id) {
     const chosenOne = state.allTheCoins.find(coin => {
       return coin.id === id;
     });
+
+    if (state.activeCoins.length === 5) {
+      rendModal();
+      
+      $(`#myModal`).modal(`show`);
+    }
+    
     state.activeCoins.push(chosenOne);
+    showSaveBtn();
+    state.tempCoins = state.activeCoins.map(tempCoin => (tempCoin = tempCoin));
   } else if (!$witch[0].checked) {
     const switchIndex = state.activeCoins.findIndex(activeCoin => {
       return activeCoin.id + "" === $witch[0].id.slice(13, 100) + "";
     });
     state.activeCoins.splice(switchIndex, 1);
+    showSaveBtn();
   } else {
-    $(`#myModal`).modal(`show`);
+  }
+}
+function rendModal() {
+  state.activeCoins.forEach(coin => {
+    $(`.modal-body`).append(`
+<div class="col-sm-1" ><p class="symbolModal" >${coin.symbol}</p>
+<div  class="custom-control custom-switch" class="modal-switch">
+  <input  type="checkbox" class="custom-control-input" id="customSwitch-${coin.symbol}" checked >
+  <label class="custom-control-label" for="customSwitch-${coin.symbol}"></label>
+</div>
+</div>
+`);
+
+    $(`#customSwitch-${coin.symbol}`).on(`click`, () => {
+      const $witch = $(`#customSwitch-${coin.symbol}`);
+      const exSwitch = $(`#customSwitch-${coin.id}`);
+      if ($witch[0].checked) {
+        exSwitch[0].checked = true;
+        const chosenOne = state.allTheCoins.find(coinz => {
+          return coinz.id === coin.id;
+        });
+        state.activeCoins.push(chosenOne);
+        showSaveBtn();
+      } else {
+        exSwitch[0].checked = false;
+        const switchIndex = state.activeCoins.findIndex(activeCoin => {
+          return activeCoin.id + "" === $witch[0].id.slice(13, 100) + "";
+        });
+        state.activeCoins.splice(switchIndex, 1);
+        showSaveBtn();
+      }
+    });
+  });
+
+  $(`#close-btn`).on(`click`, () => {
+    state.tempCoins.forEach(tempCoin => {
+      const $coin = $(`#customSwitch-${tempCoin.id}`);
+      $coin[0].checked = true;
+    });
+    console.log(state.tempCoins);
+    state.activeCoins = state.tempCoins;
+    console.log(state.activeCoins);
+    const exSwitch = $(`#customSwitch-${state.activeCoins[5].id}`);
+    exSwitch[0].checked = false;
+    setTimeout(() => {
+      state.activeCoins.splice(5, 1);
+      $(`.modal-body`).html("");
+    }),
+      500;
+  });
+}
+
+function saveModal() {
+  $(`#save-btn`).on(`click`, () => {
+    if (state.activeCoins.length < 6) {
+      $("#myModal").modal("hide");
+      $(`.modal-body`).html("");
+      setTimeout(() => {
+        $('[data-toggle="popover"]').popover("hide");
+      }),
+        100;
+    } else {
+    }
+  });
+}
+function showSaveBtn() {
+  if (state.activeCoins.length < 6) {
+    $(`#save-btn`).css("visibility", "visible");
+  }else{
+    $(`#save-btn`).css("visibility", "hidden");
   }
 }

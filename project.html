@@ -41,14 +41,18 @@
                       <!-- Modal content-->
                       <div class="modal-content">
                         <div class="modal-header">
-                          <button type="button" class="close" data-dismiss="modal">&times;</button>
-                          <h4 class="modal-title">Modal Header</h4>
+                          
+                          <h3 class="modal-title">You main have only 5 active coins!</h3>
                         </div>
                         <div class="modal-body">
-                          <p>Some text in the modal.</p>
+                    
                         </div>
                         <div class="modal-footer">
-                          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                          <button id="close-btn" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">Close</span>
+                           
+                            <button  style="visibility: hidden" id="save-btn"  data-toggle="popover" data-content="You must dispose some coins" data-placement="top" class="btn btn-success"  >Save</button>
+                          </button>                        
                         </div>
                       </div>
                       

@@ -23,3 +23,14 @@
     left: 1000px; 
 }
 
+.symbolModal{
+    position: relative;
+    
+    font-size: 30px
+}
+.col-sm-1 .custom-control-label{
+    position: relative;
+    bottom: 50px;
+
+
+}
