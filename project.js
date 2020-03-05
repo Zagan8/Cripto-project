@@ -13,6 +13,9 @@ function main() {
     rendCoin(coin.name, coin.symbol, coin.id);
   });
   saveModal();
+  graphBtn();
+  homeBtn();
+  aboutBtn();
 }
 
 main();
@@ -103,10 +106,10 @@ function activation(id) {
 
     if (state.activeCoins.length === 5) {
       rendModal();
-      
+
       $(`#myModal`).modal(`show`);
     }
-    
+
     state.activeCoins.push(chosenOne);
     showSaveBtn();
     state.tempCoins = state.activeCoins.map(tempCoin => (tempCoin = tempCoin));
@@ -185,7 +188,140 @@ function saveModal() {
 function showSaveBtn() {
   if (state.activeCoins.length < 6) {
     $(`#save-btn`).css("visibility", "visible");
-  }else{
+  } else {
     $(`#save-btn`).css("visibility", "hidden");
   }
+}
+
+function homeBtn() {
+  $(`#option1`).on(`click`, () => {
+    $(`#container`).html("");
+    main();
+  });
+}
+function graphBtn() {
+  $(`#option2`).on(`click`, () => {
+    $(`#container`).html("");
+    $(`#container`).append(
+      `<div id="chartContainer" style="height: 300px; width: 100%;"></div>`
+    );
+
+    graph();
+    async function graph() {
+      const dataArray =[];
+      const dataBase = await getDataGraph();
+    
+      dataBase.forEach((data)=>{
+        dataArray.push(data);
+      })
+      setInterval(() => {
+        dataBase.forEach(async(data)=>{
+          const dataBase = await callApi();
+          
+          data.dataPoints.splice(0,1);
+          data.dataPoints.push({ x: new Date(Date.now()), y: dataBase[data.name].USD })
+          data.yValueFormatString = `$ ${dataBase[data.name].USD}`
+          console.log(dataBase[data.name].USD);
+        })
+      }, 2500);
+      console.log(dataBase);
+      var options = {
+        exportEnabled: true,
+        animationEnabled: false,
+        title: {
+          text: "Coin value live"
+        },
+
+        axisX: {
+          title: "time"
+        },
+        axisY: {
+          title: "Coin price",
+          titleFontColor: "#4F81BC",
+          lineColor: "#4F81BC",
+          labelFontColor: "#4F81BC",
+          tickColor: "#4F81BC",
+          includeZero: false
+        },
+        toolTip: {
+          shared: true
+        },
+        legend: {
+          cursor: "pointer",
+          itemclick: toggleDataSeries
+        },
+        data: dataArray, 
+      };
+setInterval(() => {
+  $("#chartContainer").CanvasJSChart(options);
+}, 2000);
+      
+
+      function toggleDataSeries(e) {
+        if (
+          typeof e.dataSeries.visible === "undefined" ||
+          e.dataSeries.visible
+        ) {
+          e.dataSeries.visible = false;
+        } else {
+          e.dataSeries.visible = true;
+        }
+        e.chart.render();
+      }
+    }
+  });
+}
+function aboutBtn() {
+  $(`#option3`).on(`click`, () => {
+    $(`#container`).html("");
+  });
+}
+function apiGraphs() {
+  const symbols = [];
+  state.activeCoins.forEach(coin => {
+    symbols.push(coin.symbol);
+  });
+  const promise = new Promise(resolve => {
+    $.ajax({
+      type: "GET",
+      url: `https://min-api.cryptocompare.com/data/pricemulti?fsyms=${symbols},&tsyms=USD`,
+      success: function(response) {
+        resolve(response);
+      }
+    });
+  });
+  return promise;
+}
+async function callApi() {
+  const callBack = await apiGraphs();
+  return callBack;
+}
+async function getDataGraph() {
+  const database = await callApi();
+
+  const graphs = [];
+  const amountOfGraphs = Object.keys(database);
+  amountOfGraphs.forEach(graph => {
+    const graphObj = {
+      type: "spline",
+      name: `${graph}`,
+      showInLegend: true,
+      xValueFormatString: "MMM YYYY HH:mm:ss",
+      yValueFormatString: `$ ${database[graph].USD}`,
+      dataPoints: [
+        { x: new Date(Date.now()-16000), y: database[graph].USD },
+        { x: new Date(Date.now()-14000), y: database[graph].USD },
+        { x: new Date(Date.now()-12000), y: database[graph].USD },
+        { x: new Date(Date.now()-10000), y: database[graph].USD },
+        { x: new Date(Date.now()-8000), y: database[graph].USD },
+        { x: new Date(Date.now()-6000), y: database[graph].USD },
+        { x: new Date(Date.now()-4000), y: database[graph].USD },
+        { x: new Date(Date.now()-2000), y: database[graph].USD },
+        { x: new Date(Date.now()), y: database[graph].USD },
+    ]
+    };
+    graphs.push(graphObj);
+  });
+  console.log(graphs);
+  return graphs;
 }
