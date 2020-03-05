@@ -9,18 +9,18 @@
 }
 .custom-control-label{
     position: relative;
-    left: 330px;
+    left: 250px;
     bottom: 100px;
    
     
 }
 #search{
     position: relative;
-    left: 1000px;
+    left: 60%;
 }
 #searchInput{
     position: relative;
-    left: 1000px; 
+    left: 60%; 
 }
 
 .symbolModal{
@@ -34,3 +34,4 @@
 
 
 }
+

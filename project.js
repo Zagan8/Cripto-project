@@ -3,15 +3,21 @@ const state = {
   specificCoin: [],
   indexCounter: 0,
   activeCoins: [],
-  tempCoins: []
+  tempCoins: [],
+  CACHE:[],
+
 };
 
-function main() {
-  getAllCoins();
+async function main() {
+  state.allTheCoins = await getAllCoins();
   $(`#search`).on(`click`, search);
+  
+
   state.allTheCoins.forEach(coin => {
     rendCoin(coin.name, coin.symbol, coin.id);
   });
+  
+
   saveModal();
   graphBtn();
   homeBtn();
@@ -22,16 +28,17 @@ main();
 
 //call all the coins
 function getAllCoins() {
-  $.ajax({
-    type: "GET",
-    url: "https://api.coingecko.com/api/v3/coins/list",
-    async: false,
-    success: function(response) {
-      for (let i = 0; i < 100; i++) {
-        state.allTheCoins.push(response[i]);
-      }
-    }
-  });
+  //$(`#load-modal`).modal(`show`);
+  const promise = new Promise((resolve)=>{
+    $.ajax({
+      type: "GET",
+      url: "https://api.coingecko.com/api/v3/coins/list",
+      success: resolve,
+    });
+    
+  })
+  $(`#container`).html("");
+  return promise;
 }
 
 // rend all the coins
@@ -67,11 +74,28 @@ function getSpecificCoin(id) {
   $(`#col-div-${id}`).html(`<div class="spinner-border" role="status">
   <span class="sr-only">Loading...</span>
 </div>`);
+  
+  
+const date = new Date(Date.now())
+const coinCache = id;
+const cache = state.CACHE.find((coin)=>{
+  return coin.coin.id===coinCache;
+})
+const cacheIndex= state.CACHE.findIndex((coin)=>{
+  return coin===cache;
+})
+if(!cache||(cache.date<new Date(Date.now())-120000)){
+  console.log(`first stop`);
+  console.log(cacheIndex);
+  if(cacheIndex>=0){
+    state.CACHE.splice(cacheIndex,1);
+  }
   $.ajax({
     type: "GET",
     url: `https://api.coingecko.com/api/v3/coins/${id}`,
     success: function(response) {
       state.specificCoin.push(response);
+      state.CACHE.push({"coin":response,"date":date})
       $(`#col-div-${id}`).html(`
         <img src="${response.image.small}">
 <p>Value in shekels is:&#8362;${response.market_data.current_price.ils}</p>
@@ -80,22 +104,31 @@ function getSpecificCoin(id) {
         `);
     }
   });
+}else if(cache.date>=(new Date(Date.now())-120000)){
+  console.log('second stop');
+  $(`#col-div-${id}`).html(`
+  <img src="${cache.coin.image.small}">
+<p>Value in shekels is:&#8362;${cache.coin.market_data.current_price.ils}</p>
+<p>Value in usd is: &#36;${cache.coin.market_data.current_price.usd} </p>
+<p>Value in euro is: &euro; ${cache.coin.market_data.current_price.eur} </p>
+`);
+}
 }
 function search() {
   $(`#container`).html(``);
   let inputVal = $(`#searchInput`).val();
-  $.ajax({
-    type: "GET",
-    url: `https://api.coingecko.com/api/v3/coins/${inputVal}`,
-    error: function() {
-      $(`#container`).html(
-        `<p style="color:red;" >There not such a coin please try again</p>`
-      );
-    },
-    success: function(response) {
-      rendCoin(response.name, response.symbol, response.id);
-    }
-  });
+ 
+  const searchResult=state.allTheCoins.find((coin)=>{
+    return coin.symbol===inputVal
+  })
+  if(searchResult){
+  rendCoin(searchResult.name,searchResult.symbol,searchResult.id);
+  }else{
+    $(`#container`).html(
+      `<p style="color:red;" >There not such a coin please try again</p>`
+    );
+  }
+
 }
 function activation(id) {
   const $witch = $(`#customSwitch-${id}`);
@@ -201,7 +234,7 @@ function homeBtn() {
 }
 function graphBtn() {
   $(`#option2`).on(`click`, () => {
-    $(`#container`).html("");
+    $(`.col-sm-4`).css("visibility","hidden");
     $(`#container`).append(
       `<div id="chartContainer" style="height: 300px; width: 100%;"></div>`
     );
