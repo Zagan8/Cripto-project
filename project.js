@@ -1,7 +1,6 @@
 const state = {
   allTheCoins: [],
   specificCoin: [],
-  indexCounter: 0,
   activeCoins: [],
   tempCoins: [],
   CACHE: []
@@ -66,7 +65,7 @@ function rendCoin(coinName, symbol, id) {
     </div>
     `);
 
-  state.indexCounter++;
+  
   $(`#col-btn-${id}`).on(`click`, () => {
     getSpecificCoin(id);
   });
