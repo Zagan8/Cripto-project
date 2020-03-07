@@ -4,24 +4,30 @@ const state = {
   indexCounter: 0,
   activeCoins: [],
   tempCoins: [],
-  CACHE:[],
-
+  CACHE: []
 };
 
 async function main() {
   state.allTheCoins = await getAllCoins();
-  $(`#search`).on(`click`, search);
-  
+  $(`#search-btn`).on(`click`, search);
 
   state.allTheCoins.forEach(coin => {
     rendCoin(coin.name, coin.symbol, coin.id);
   });
-  
-
+  graphsVisability();
   saveModal();
   graphBtn();
-  homeBtn();
-  aboutBtn();
+  $(`#home-tab`).on(`click`, () => {
+    if (!$("#profile-tab.nav-link.active")) {
+      state.allTheCoins.forEach(coin => {
+        rendCoin(coin.name, coin.symbol, coin.id);
+      });
+    }
+    state.activeCoins.forEach(coin => {
+      const exSwitch = $(`#customSwitch-${coin.id}`);
+      exSwitch[0].checked = true;
+    });
+  });
 }
 
 main();
@@ -29,14 +35,13 @@ main();
 //call all the coins
 function getAllCoins() {
   //$(`#load-modal`).modal(`show`);
-  const promise = new Promise((resolve)=>{
+  const promise = new Promise(resolve => {
     $.ajax({
       type: "GET",
       url: "https://api.coingecko.com/api/v3/coins/list",
-      success: resolve,
+      success: resolve
     });
-    
-  })
+  });
   $(`#container`).html("");
   return promise;
 }
@@ -74,61 +79,56 @@ function getSpecificCoin(id) {
   $(`#col-div-${id}`).html(`<div class="spinner-border" role="status">
   <span class="sr-only">Loading...</span>
 </div>`);
-  
-  
-const date = new Date(Date.now())
-const coinCache = id;
-const cache = state.CACHE.find((coin)=>{
-  return coin.coin.id===coinCache;
-})
-const cacheIndex= state.CACHE.findIndex((coin)=>{
-  return coin===cache;
-})
-if(!cache||(cache.date<new Date(Date.now())-120000)){
-  console.log(`first stop`);
-  console.log(cacheIndex);
-  if(cacheIndex>=0){
-    state.CACHE.splice(cacheIndex,1);
-  }
-  $.ajax({
-    type: "GET",
-    url: `https://api.coingecko.com/api/v3/coins/${id}`,
-    success: function(response) {
-      state.specificCoin.push(response);
-      state.CACHE.push({"coin":response,"date":date})
-      $(`#col-div-${id}`).html(`
+
+  const date = new Date(Date.now());
+  const coinCache = id;
+  const cache = state.CACHE.find(coin => {
+    return coin.coin.id === coinCache;
+  });
+  const cacheIndex = state.CACHE.findIndex(coin => {
+    return coin === cache;
+  });
+  if (!cache || cache.date < new Date(Date.now()) - 120000) {
+    if (cacheIndex >= 0) {
+      state.CACHE.splice(cacheIndex, 1);
+    }
+    $.ajax({
+      type: "GET",
+      url: `https://api.coingecko.com/api/v3/coins/${id}`,
+      success: function(response) {
+        state.specificCoin.push(response);
+        state.CACHE.push({ coin: response, date: date });
+        $(`#col-div-${id}`).html(`
         <img src="${response.image.small}">
 <p>Value in shekels is:&#8362;${response.market_data.current_price.ils}</p>
 <p>Value in usd is: &#36;${response.market_data.current_price.usd} </p>
 <p>Value in euro is: &euro; ${response.market_data.current_price.eur} </p>
         `);
-    }
-  });
-}else if(cache.date>=(new Date(Date.now())-120000)){
-  console.log('second stop');
-  $(`#col-div-${id}`).html(`
+      }
+    });
+  } else if (cache.date >= new Date(Date.now()) - 120000) {
+    $(`#col-div-${id}`).html(`
   <img src="${cache.coin.image.small}">
 <p>Value in shekels is:&#8362;${cache.coin.market_data.current_price.ils}</p>
 <p>Value in usd is: &#36;${cache.coin.market_data.current_price.usd} </p>
 <p>Value in euro is: &euro; ${cache.coin.market_data.current_price.eur} </p>
 `);
-}
+  }
 }
 function search() {
   $(`#container`).html(``);
   let inputVal = $(`#searchInput`).val();
- 
-  const searchResult=state.allTheCoins.find((coin)=>{
-    return coin.symbol===inputVal
-  })
-  if(searchResult){
-  rendCoin(searchResult.name,searchResult.symbol,searchResult.id);
-  }else{
-    $(`#container`).html(
+
+  const searchResult = state.allTheCoins.find(coin => {
+    return coin.symbol === inputVal;
+  });
+  if (searchResult) {
+    rendCoin(searchResult.name, searchResult.symbol, searchResult.id);
+  } else {
+    $(`#search`).html(
       `<p style="color:red;" >There not such a coin please try again</p>`
     );
   }
-
 }
 function activation(id) {
   const $witch = $(`#customSwitch-${id}`);
@@ -144,6 +144,7 @@ function activation(id) {
     }
 
     state.activeCoins.push(chosenOne);
+    graphsVisability();
     showSaveBtn();
     state.tempCoins = state.activeCoins.map(tempCoin => (tempCoin = tempCoin));
   } else if (!$witch[0].checked) {
@@ -151,6 +152,7 @@ function activation(id) {
       return activeCoin.id + "" === $witch[0].id.slice(13, 100) + "";
     });
     state.activeCoins.splice(switchIndex, 1);
+    graphsVisability();
     showSaveBtn();
   } else {
   }
@@ -192,9 +194,9 @@ function rendModal() {
       const $coin = $(`#customSwitch-${tempCoin.id}`);
       $coin[0].checked = true;
     });
-    console.log(state.tempCoins);
+
     state.activeCoins = state.tempCoins;
-    console.log(state.activeCoins);
+
     const exSwitch = $(`#customSwitch-${state.activeCoins[5].id}`);
     exSwitch[0].checked = false;
     setTimeout(() => {
@@ -226,38 +228,32 @@ function showSaveBtn() {
   }
 }
 
-function homeBtn() {
-  $(`#option1`).on(`click`, () => {
-    $(`#container`).html("");
-    main();
-  });
-}
 function graphBtn() {
-  $(`#option2`).on(`click`, () => {
-    $(`.col-sm-4`).css("visibility","hidden");
-    $(`#container`).append(
-      `<div id="chartContainer" style="height: 300px; width: 100%;"></div>`
-    );
-
+  $(`#profile-tab`).on(`click`, () => {
+    if (state.activeCoins.length === 0) {
+      $(`#profile`).html(``);
+    }
     graph();
     async function graph() {
-      const dataArray =[];
+      const dataArray = [];
       const dataBase = await getDataGraph();
-    
-      dataBase.forEach((data)=>{
+
+      dataBase.forEach(data => {
         dataArray.push(data);
-      })
-      setInterval(() => {
-        dataBase.forEach(async(data)=>{
+      });
+      const dataCanvas = setInterval(() => {
+        dataBase.forEach(async data => {
           const dataBase = await callApi();
-          
-          data.dataPoints.splice(0,1);
-          data.dataPoints.push({ x: new Date(Date.now()), y: dataBase[data.name].USD })
-          data.yValueFormatString = `$ ${dataBase[data.name].USD}`
-          console.log(dataBase[data.name].USD);
-        })
+
+          data.dataPoints.splice(0, 1);
+          data.dataPoints.push({
+            x: new Date(Date.now()),
+            y: dataBase[data.name].USD
+          });
+          data.yValueFormatString = `$ ${dataBase[data.name].USD}`;
+        });
       }, 2500);
-      console.log(dataBase);
+
       var options = {
         exportEnabled: true,
         animationEnabled: false,
@@ -283,12 +279,11 @@ function graphBtn() {
           cursor: "pointer",
           itemclick: toggleDataSeries
         },
-        data: dataArray, 
+        data: dataArray
       };
-setInterval(() => {
-  $("#chartContainer").CanvasJSChart(options);
-}, 2000);
-      
+      const canvas = setInterval(() => {
+        startCanvas(options);
+      }, 2500);
 
       function toggleDataSeries(e) {
         if (
@@ -301,12 +296,15 @@ setInterval(() => {
         }
         e.chart.render();
       }
+
+      $(`#home-tab`).on(`click`, () => {
+        stopCanvas(canvas);
+        stopCanvas(dataCanvas);
+      });
+      $(`#profile`).html(
+        `<div id="chartContainer" style="height: 300px; width: 100%;"></div>`
+      );
     }
-  });
-}
-function aboutBtn() {
-  $(`#option3`).on(`click`, () => {
-    $(`#container`).html("");
   });
 }
 function apiGraphs() {
@@ -342,19 +340,32 @@ async function getDataGraph() {
       xValueFormatString: "MMM YYYY HH:mm:ss",
       yValueFormatString: `$ ${database[graph].USD}`,
       dataPoints: [
-        { x: new Date(Date.now()-16000), y: database[graph].USD },
-        { x: new Date(Date.now()-14000), y: database[graph].USD },
-        { x: new Date(Date.now()-12000), y: database[graph].USD },
-        { x: new Date(Date.now()-10000), y: database[graph].USD },
-        { x: new Date(Date.now()-8000), y: database[graph].USD },
-        { x: new Date(Date.now()-6000), y: database[graph].USD },
-        { x: new Date(Date.now()-4000), y: database[graph].USD },
-        { x: new Date(Date.now()-2000), y: database[graph].USD },
-        { x: new Date(Date.now()), y: database[graph].USD },
-    ]
+        { x: new Date(Date.now() - 16000), y: database[graph].USD },
+        { x: new Date(Date.now() - 14000), y: database[graph].USD },
+        { x: new Date(Date.now() - 12000), y: database[graph].USD },
+        { x: new Date(Date.now() - 10000), y: database[graph].USD },
+        { x: new Date(Date.now() - 8000), y: database[graph].USD },
+        { x: new Date(Date.now() - 6000), y: database[graph].USD },
+        { x: new Date(Date.now() - 4000), y: database[graph].USD },
+        { x: new Date(Date.now() - 2000), y: database[graph].USD },
+        { x: new Date(Date.now()), y: database[graph].USD }
+      ]
     };
     graphs.push(graphObj);
   });
-  console.log(graphs);
+
   return graphs;
+}
+function startCanvas(options) {
+  $("#chartContainer").CanvasJSChart(options);
+}
+function stopCanvas(canvas) {
+  clearInterval(canvas);
+}
+function graphsVisability() {
+  if (state.activeCoins.length === 0) {
+    $(`#profile-tab`).css("visibility", "hidden");
+  } else {
+    $(`#profile-tab`).css("visibility", "visible");
+  }
 }

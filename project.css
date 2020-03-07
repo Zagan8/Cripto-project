@@ -1,37 +1,56 @@
-.col-sm-4{
-    border-style: solid;
-    border-width: 1px;
-    border-color: black;
+.col-sm-4 {
+  border-style: solid;
+  border-width: 1px;
+  border-color: black;
 }
-.col-sm-4{
-    padding: 0px;
-    padding-top: 10px;
+.col-sm-4 {
+  padding: 0px;
+  padding-top: 10px;
 }
-.custom-control-label{
-    position: relative;
-    left: 250px;
-    bottom: 100px;
-   
-    
+.custom-control-label {
+  position: relative;
+  left: 250px;
+  bottom: 100px;
 }
-#search{
-    position: relative;
-    left: 60%;
+#search-btn {
+  position: relative;
+  left: 60%;
 }
-#searchInput{
-    position: relative;
-    left: 60%; 
+#searchInput {
+  position: relative;
+  left: 60%;
 }
 
-.symbolModal{
-    position: relative;
-    
-    font-size: 30px
+.symbolModal {
+  position: relative;
+
+  font-size: 30px;
 }
-.col-sm-1 .custom-control-label{
-    position: relative;
-    bottom: 50px;
-
-
+.col-sm-1 .custom-control-label {
+  position: relative;
+  bottom: 50px;
 }
-
+body {
+  background-image: url(cripto.jpg);
+  background-size: 100%;
+  background-repeat: repeat-y;
+}
+h1 {
+  color: #a6cdf1;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+    1px 1px 0 #000;
+  font-family: "Trade Winds", cursive;
+  font-size: 350%;
+}
+h2,
+h3 {
+  color: #a6cdf1;
+}
+p {
+  color: #a6cdf1;
+}
+a {
+  color: blue;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+    1px 1px 0 #000;
+}
